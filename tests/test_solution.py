@@ -1,5 +1,5 @@
-## Student Name:
-## Student ID: 
+## Student Name: Brandon Ngo
+## Student ID: 218777714
 
 """
 Public test suite for the meeting slot suggestion exercise.

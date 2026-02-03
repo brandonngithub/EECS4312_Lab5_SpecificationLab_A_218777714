@@ -64,3 +64,65 @@ def test_lunch_break_blocks_all_slots_during_lunch():
     assert "12:45" not in slots
 
 """TODO: Add at least 5 additional test cases to test your implementation."""
+def test_meeting_duration_boundary_end_of_day():
+    """
+    Duration and end-of-day boundary:
+    For 90-min meetings, last valid start is 15:30 (ends 17:00).
+    """
+    events = []
+    slots = suggest_slots(events, meeting_duration=90, day="2026-02-01")
+
+    assert "15:30" in slots
+    assert "15:45" not in slots
+
+
+def test_event_crossing_work_start_clips_morning_slot():
+    """
+    Constraint:
+    Events that start before working hours and end after 09:00 block early slots.
+    """
+    events = [{"start": "08:50", "end": "09:10"}]
+    slots = suggest_slots(events, meeting_duration=15, day="2026-02-01")
+
+    assert "09:00" not in slots
+    assert "09:15" in slots
+
+
+def test_back_to_back_events_leave_no_gap():
+    """
+    Constraint:
+    Back-to-back events cover the entire interval without gaps.
+    """
+    events = [
+        {"start": "09:00", "end": "09:45"},
+        {"start": "09:45", "end": "10:00"},
+    ]
+    slots = suggest_slots(events, meeting_duration=15, day="2026-02-01")
+
+    assert "09:45" not in slots
+    assert "10:00" in slots
+
+
+def test_lunch_boundary_for_one_hour_meeting():
+    """
+    Constraint:
+    60-min meetings must not cross lunch; 11:00 is valid, 11:15 is not.
+    """
+    events = []
+    slots = suggest_slots(events, meeting_duration=60, day="2026-02-01")
+
+    assert "11:00" in slots
+    assert "11:15" not in slots
+
+
+def test_empty_day_slot_count_for_30_min():
+    """
+    Sanity:
+    On an empty day, 30-min meetings have 26 starts (11 morning + 15 afternoon).
+    """
+    events = []
+    slots = suggest_slots(events, meeting_duration=30, day="2026-02-01")
+
+    assert len(slots) == 26
+    assert slots[0] == "09:00"
+    assert slots[-1] == "16:30"
